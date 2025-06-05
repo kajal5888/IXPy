@@ -1,0 +1,39 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+Author: Dr. Diljit Singh Kajal
+Title: SonyDAB - Behaviour Analysis 20224
+Company: Institut für experimentelle Psychophysiologie GmbH
+Date : 28 May 2025
+email: d.kajal@ixp-duesseldorf.de
+
+"""
+import os
+from IXPy.utils import utils
+
+__all__ = ["Load_Data",]
+
+
+def Load_Data(Filename, Preload, Device="Brainvision"):
+    """_summary_
+
+    Args:
+        Filename (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    import mne
+    if utils._dir_and_file_check(Filename):
+        Task = "" if Preload else "Meta "
+        utils.DJ_Print(f"Loading {Task}Data: {os.path.basename(Filename)}")
+        if Device == "Brainvision":
+            Data = mne.io.read_raw_brainvision(Filename, preload=Preload)
+        else:
+            print("Check the device")
+    return Data
+
+
+# if __name__ == "__main__":
+#     Read_BrainvisionDataFile()

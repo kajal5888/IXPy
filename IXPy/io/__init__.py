@@ -19,6 +19,6 @@ email: d.kajal@ixp-duesseldorf.de
 # )
 
 from .load_EEG import Load_Data
-
-__all__ = ["Load_Data",]
+from .load_Psychopy import Load_Psychopy
+__all__ = ["Load_Data", "Load_Psychopy"]
 # __all__.extend(load_EEG.__all__)

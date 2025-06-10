@@ -33,7 +33,3 @@ def Load_Data(Filename, Preload, Device="Brainvision"):
         else:
             print("Check the device")
     return Data
-
-
-# if __name__ == "__main__":
-#     Read_BrainvisionDataFile()

@@ -28,6 +28,7 @@ __all__ = [
     "load_json",
     "_dir_and_file_check",
     "FolderCheck",
+    "DirCheck"
 ]
 
 
@@ -101,6 +102,29 @@ def DJ_Print(STR, ColType='green'):
         print(PrintColors.UNDERLINE + STR + PrintColors.ENDC)
     elif ColType.lower() == 'bold':
         print(PrintColors.BOLD + STR + PrintColors.ENDC)
+
+
+def DirCheck(FileName, Replace):
+    """This python definition check if the target file or directory exists or not.
+    If the Replace is true then it returns True of replace the target directory
+
+
+    Args:
+        FileName (str): Name of the file
+        Replace (bool): True or False
+
+    Returns: Boolean True or False
+    """
+    if Replace:
+        return True
+    Check = Path(FileName)
+    if Check.exists():
+        if Check.is_dir():
+            return False if os.path.isdir(FileName) else True
+        if Check.is_file():
+            return False if os.path.isfile(FileName) else True
+    else:
+        return True
 
 
 def ReadCSV_MaxHealthBand(filename):

@@ -30,6 +30,9 @@ def Load_Data(Filename, Preload, Device="Brainvision"):
         utils.DJ_Print(f"Loading {Task}Data: {os.path.basename(Filename)}")
         if Device == "Brainvision":
             Data = mne.io.read_raw_brainvision(Filename, preload=Preload)
+        elif Device == 'Somnomedics':
+            Data = mne.io.read_raw_edf(Filename, preload=Preload)
         else:
-            print("Check the device")
+            utils.DJ_Print(
+                f"Target File : {os.path.basename(Filename)} MISSING", ColType='warning')
     return Data

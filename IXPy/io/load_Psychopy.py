@@ -30,4 +30,7 @@ def Load_Psychopy(Filename):
         Task = ""
         utils.DJ_Print(f"Loading {Task}Data: {os.path.basename(Filename)}")
         Data = pd.read_csv(Filename)
+    else:
+        utils.DJ_Print(
+            f"Target File : {os.path.basename(Filename)} MISSING", ColType='warning')
     return Data

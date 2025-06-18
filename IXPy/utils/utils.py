@@ -16,6 +16,7 @@ import pandas as pd
 import pyedflib
 from pathlib import Path
 import os
+import mne
 
 __all__ = [
     "DJ_StructureTemplate",
@@ -28,7 +29,9 @@ __all__ = [
     "load_json",
     "_dir_and_file_check",
     "FolderCheck",
-    "DirCheck"
+    "DirCheck",
+    "Save_MNE_TFR",
+    "Load_MNE_TFR",
 ]
 
 
@@ -235,6 +238,15 @@ def FolderCheck(Path, MakeFolder=True):
         DJ_Print('Creating Folder...', 'warning')
         os.mkdir(Path)
 
+
+def Save_MNE_TFR(Filename, File):
+    mne.time_frequency.write_tfrs(
+        fname=Filename + '-tfr.h5', tfr=File, overwrite=True)
+
+
+def Load_MNE_TFR(FileName):
+    loadedTFR = mne.time_frequency.read_tfrs(fname=FileName + '-tfr.h5')[0]
+    return loadedTFR
 
 # def DJ_MNE_formatData(DataToBeConverted, WindowLength, ReduceTrials=True, ReduceTrialNum=DJ_AnalysisParameters().ReduceTrialNum):
 #     WL = _WindowLength(WindowLength)

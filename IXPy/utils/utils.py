@@ -239,14 +239,18 @@ def FolderCheck(Path, MakeFolder=True):
         os.mkdir(Path)
 
 
-def Save_MNE_TFR(Filename, File):
-    mne.time_frequency.write_tfrs(
-        fname=Filename + '-tfr.h5', tfr=File, overwrite=True)
+class TFR_MNE():
+    def __init__(self, Filename):
+        self.Filename = Filename
 
+    def Save(self, File):
+        mne.time_frequency.write_tfrs(
+            fname=self.Filename + '-tfr.h5', tfr=File, overwrite=True)
 
-def Load_MNE_TFR(FileName):
-    loadedTFR = mne.time_frequency.read_tfrs(fname=FileName + '-tfr.h5')[0]
-    return loadedTFR
+    def Load(self):
+        loadedTFR = mne.time_frequency.read_tfrs(
+            fname=self.FileName + '-tfr.h5')[0]
+        return loadedTFR
 
 # def DJ_MNE_formatData(DataToBeConverted, WindowLength, ReduceTrials=True, ReduceTrialNum=DJ_AnalysisParameters().ReduceTrialNum):
 #     WL = _WindowLength(WindowLength)

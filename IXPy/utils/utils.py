@@ -30,8 +30,7 @@ __all__ = [
     "_dir_and_file_check",
     "FolderCheck",
     "DirCheck",
-    "Save_MNE_TFR",
-    "Load_MNE_TFR",
+    "TFR_MNE",
 ]
 
 
@@ -242,6 +241,7 @@ def FolderCheck(Path, MakeFolder=True):
 class TFR_MNE():
     def __init__(self, Filename):
         self.Filename = Filename
+        """ Insert the File checking procedure"""
 
     def Save(self, File):
         mne.time_frequency.write_tfrs(
@@ -249,7 +249,7 @@ class TFR_MNE():
 
     def Load(self):
         loadedTFR = mne.time_frequency.read_tfrs(
-            fname=self.FileName + '-tfr.h5')[0]
+            fname=self.Filename + '-tfr.h5')[0]
         return loadedTFR
 
 # def DJ_MNE_formatData(DataToBeConverted, WindowLength, ReduceTrials=True, ReduceTrialNum=DJ_AnalysisParameters().ReduceTrialNum):

@@ -6,6 +6,7 @@
 
 from .utils import *
 from .io import *
+from .preproc import *
 
 # # print(help(ReadCSV))
 # # Manage user-exposed namespace imports
@@ -13,6 +14,7 @@ from .io import *
 __all__ = []
 __all__.extend(utils.__all__)
 __all__.extend(io.__all__)
+__all__.extend(preproc.__all__)
 # from IXPy.io.load_EEG import Load_Data
 # from IXPy.utils.utils import DJ_Print
 

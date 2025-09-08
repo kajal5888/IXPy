@@ -10,14 +10,6 @@ email: d.kajal@ixp-duesseldorf.de
 
 """
 
-# from load_EEG import *
-# import load_EEG
-
-# print(dir(load_EEG))
-# from . import (
-#     load_EEG,
-# )
-
 from .load_EEG import Load_Data
 from .load_Psychopy import Load_Psychopy
 __all__ = ["Load_Data", "Load_Psychopy"]

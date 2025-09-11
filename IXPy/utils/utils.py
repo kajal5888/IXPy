@@ -17,6 +17,7 @@ import pyedflib
 from pathlib import Path
 import os
 import mne
+import socket
 
 __all__ = [
     "DJ_StructureTemplate",
@@ -31,6 +32,9 @@ __all__ = [
     "FolderCheck",
     "DirCheck",
     "TFR_MNE",
+    "Sony_SubjectList",
+    "Project_year",
+    "Workpackages"
 ]
 
 
@@ -251,6 +255,41 @@ class TFR_MNE():
         loadedTFR = mne.time_frequency.read_tfrs(
             fname=self.Filename + '-tfr.h5')[0]
         return loadedTFR
+
+
+def Workpackages():
+    return {'WP2': 'WP2/Data Sets_MainExperimentRawData/',
+            'WP1': 'WP1/Data Sets_MainExperimentRawData/', }
+
+
+def Project_year(Project_Name):
+    year_project = {'DAB': '2024_DAB', 'MAS': '2025_MAS'}
+    assert Project_Name in year_project, DJ_Print(
+        "Please enter the correct Project Name")
+    return year_project[Project_Name]
+
+
+class Sony_SubjectList():
+    """Project Name = "DAB", "MAS"
+    """
+
+    def __init__(self, Project_Name="DAB"):
+        self.project_name = Project_year(Project_Name)
+
+    def SonyDAB_SubjectList(self, Workpackage):
+        if 'IXP' in socket.gethostname():
+            DJ_Print('Please enter the BasePath', 'warning')
+            pass
+            # BasePath = ""
+        elif "dkajal" in socket.gethostname():
+            BasePath = f"/Users/dkajal/OneDrive - Institut für experimentelle Psychophysiologie GmbH/Projekte_laufend/{self.project_name}_Sony/"
+        DataPath = f"{BasePath}{Workpackages()[Workpackage]}".replace(
+            '\\', '/')
+        SubjectFolders = [Subject for Subject in os.listdir(
+            DataPath) if 'WP' in Subject and '.xlsx' not in Subject]
+        SubjectFolders.sort()
+        return SubjectFolders
+
 
 # def DJ_MNE_formatData(DataToBeConverted, WindowLength, ReduceTrials=True, ReduceTrialNum=DJ_AnalysisParameters().ReduceTrialNum):
 #     WL = _WindowLength(WindowLength)

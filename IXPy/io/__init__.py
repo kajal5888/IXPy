@@ -1,16 +1,10 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+import inspect
+from . import load_EEG, load_Psychopy
 
-"""
-Author: Dr. Diljit Singh Kajal
-Title: SonyDAB - Behaviour Analysis 20224
-Company: Institut für experimentelle Psychophysiologie GmbH
-Date : 28 May 2025
-email: d.kajal@ixp-duesseldorf.de
-
-"""
-
-from .load_EEG import Load_Data
-from .load_Psychopy import Load_Psychopy
-__all__ = ["Load_Data", "Load_Psychopy"]
-# __all__.extend(load_EEG.__all__)
+__all__ = []
+for module in [load_EEG, load_Psychopy]:
+    funcs = [name for name, obj in inspect.getmembers(
+        module, inspect.isfunction) if obj.__module__ == module.__name__]
+    __all__.extend(funcs)
+    for name in funcs:
+        globals()[name] = getattr(module, name)

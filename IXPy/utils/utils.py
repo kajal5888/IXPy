@@ -177,17 +177,42 @@ def Preprocessing_MaxHealthBand(df, ppg_columns):
     return df
 
 
-def ReadCSV(filename):
-    """This function reads the CSV file
+class ReadCSV:
+    from pathlib import Path
 
-    Args:
-        filename (_type_): _description_
+    def __init__(self, filename, device, encoding='utf-8', pandas_kwargs=None):
+        self.filename = Path(filename)
+        self.device = device.lower()
+        self.encoding = encoding
+        self.pandas_kwargs = pandas_kwargs or {}
 
-    Returns:
-        _type_: _description_
-    """
-    df = pd.read_csv(filename)
-    return df
+    def __repr__(self) -> str:
+        return f"ReadCSV(filename={str(self.filename)!r}, device={self.device!r})"
+
+    def _validate(self) -> None:
+        if not self.filename.exists():
+            raise FileNotFoundError(f"CSV file not found: {self.filename}")
+
+    def Read(self):
+        """This function reads the CSV file
+        """
+        self._validate()
+        try:
+            if self.device == 'shimmer':
+                header_idx = 0
+                dF = pd.read_csv(self.filename, sep=',',
+                                 low_memory=False, encoding=self.encoding, **self.pandas_kwargs)
+                dF = dF.reset_index()
+                dF.columns = dF.iloc[header_idx]
+                dF.drop(index=[header_idx, header_idx + 1], axis=0,
+                        inplace=True)
+            else:
+                dF = pd.read_csv(
+                    self.filename, encoding=self.encoding, **self.pandas_kwargs)
+        except Exception as exc:
+            raise RuntimeError(
+                f"Failed to read CSV {self.filename}: {exc}") from exc
+        return dF
 
 
 def ReadEDF(filename):

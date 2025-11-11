@@ -178,5 +178,12 @@ class Read_EmbracePlus:
         return EP_Data
 
     def Read(self):
-        Embrace_data = self._read_embrace_plus()
+        Embrace_data_Combined = self._read_embrace_plus()
+        Embrace_data = dict()
+        for key in Embrace_data_Combined[0].keys():
+            Embrace_data[key] = pd.DataFrame()
+            for i, data in enumerate(Embrace_data_Combined):
+                if not data[key].empty:
+                    Embrace_data[key] = data[key] if i == 0 else pd.concat(
+                        [data[key], Embrace_data[key]], ignore_index=True)
         return Embrace_data

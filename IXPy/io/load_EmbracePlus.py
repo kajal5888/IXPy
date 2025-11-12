@@ -179,6 +179,11 @@ class Read_EmbracePlus:
 
     def Read(self):
         Embrace_data_Combined = self._read_embrace_plus()
+        if not Embrace_data_Combined:
+            utils.DJ_Print(
+                f"No EmbracePlus avro data found under: {self.folder_path}", 'warning')
+            return {}
+
         Embrace_data = dict()
         for key in Embrace_data_Combined[0].keys():
             Embrace_data[key] = pd.DataFrame()

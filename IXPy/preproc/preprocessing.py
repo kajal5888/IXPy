@@ -3,7 +3,8 @@ from IXPy.utils import utils
 import mne
 import matplotlib.pyplot as plt
 
-__all__ = ["Filter_EEG", "Set_Montage", "PSD"]
+
+__all__ = ["Filter_EEG", "Set_Montage", "PSD", "Spectrogram"]
 
 
 def Filter_EEG(raw, notch=True, notch_freqs=(50, 100, 150), band_pass=True, l_freq=1.0, h_freq=None, fir_design='firwin'):
@@ -123,3 +124,16 @@ def PSD(raw, subject_id, channel=None, fmin=1, fmax=100, tmin=None, tmax=None,
                 plt.savefig(save_full_path, format='png')
             if show:
                 plt.show(block=False)
+
+
+def Spectrogram(data, fmin, fmax, fs, nperseg, noverlap, normalize=True):
+    from scipy.signal import spectrogram
+    import numpy as np
+    frequencies, times_stft, Zxx = spectrogram(
+        data, fs=fs, nperseg=nperseg, noverlap=noverlap)
+    freq_mask = (frequencies >= fmin) & (frequencies <= fmax)
+    frequencies = frequencies[freq_mask]
+    power = Zxx[freq_mask, :]
+    if normalize:
+        power = (power - np.min(power)) / (np.max(power) - np.min(power))
+    return power, frequencies, times_stft

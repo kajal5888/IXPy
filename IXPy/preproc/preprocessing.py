@@ -121,12 +121,12 @@ def PSD(raw, subject_id, channel=None, fmin=1, fmax=100, tmin=None, tmax=None,
             _ = [line.set_linewidth(1.5) for line in Ax.get_lines()]
             Ax.set_ylim(-10, 50)
             if save:
-                plt.savefig(save_full_path, format='png')
+                plt.savefig(save_full_path, format='png', dpi=300)
             if show:
                 plt.show(block=False)
 
 
-def Spectrogram(raw, subject_id, channel_names, fmin, fmax, tmin, tmax, fs, nperseg, noverlap, save_full_path, save, normalize, overwrite, tfr_method, version_type, show):
+def Spectrogram(raw, subject_id, channel_names, fmin, fmax, tmin, tmax, fs, nperseg, noverlap, nfft, save_full_path, save, normalize, overwrite, tfrmethod, versiontype, show):
     """
     Compute and save spectrograms for specified EEG channels using Short-Time Fourier Transform (STFT).
 
@@ -154,15 +154,15 @@ def Spectrogram(raw, subject_id, channel_names, fmin, fmax, tmin, tmax, fs, nper
     if utils.DirCheck(save_full_path, overwrite):
         import numpy as np
         import matplotlib.pyplot as plt
-        for ch in channel_names[-1:]:
+        import itertools
+        for idx, (ch, version_type, tfr_method) in enumerate(itertools.product(channel_names, (versiontype,), (tfrmethod,))):
             utils.DJ_Print(
-                f"Generating Spectrogram for Subject: {subject_id}, channel: {ch}")
+                f"Generating Spectrogram for Subject: {subject_id}, TFR Method: {tfr_method}, Version: {version_type} channel: {ch}")
             TFR_Filename = f"{save_full_path}{version_type}_{tfr_method}_{ch}.png"
             fmin, fmax, fs = fmin, fmax, raw.info['sfreq']
             frequencies = np.arange(fmin, fmax, .1)
             n_cycles = 8
-
-            if version_type == 'SonyDAB':
+            if version_type == 'Scipy_STFT':
                 from scipy.signal import spectrogram
                 data, times = raw.copy().get_data(
                     picks=[ch], return_times=True)
@@ -171,7 +171,7 @@ def Spectrogram(raw, subject_id, channel_names, fmin, fmax, tmin, tmax, fs, nper
 
                 # Perform STFT to get spectrogram
                 frequencies, times_stft, Zxx = spectrogram(
-                    data, fs=fs, nperseg=nperseg, noverlap=noverlap)
+                    data, fs=fs, nperseg=nperseg, noverlap=noverlap, nfft=nfft)
                 freq_mask = (frequencies >= fmin) & (frequencies <= fmax)
                 frequencies = frequencies[freq_mask]
                 power = Zxx[freq_mask, :]
@@ -190,11 +190,78 @@ def Spectrogram(raw, subject_id, channel_names, fmin, fmax, tmin, tmax, fs, nper
                 plt.xlabel('Time (s)')
                 plt.tight_layout()
                 # plt.show()
-
                 if save:
-                    plt.savefig(TFR_Filename, format='.png')
-            elif version_type == 'MNE_Python':
+                    plt.savefig(TFR_Filename, format='png', dpi=300)
 
+                if idx == 0:
+                    window_length = 15.0     # 15 s window for ECG HR
+                    Overlap = 0.9     # 90% overlap
+                    n_perseg = 64      # minimum samples per window
+                    nfft_min = 4096    # minimum FFT size for better BPM resolution
+                    nperseg = int(raw.info['sfreq'] * window_length)
+                    nperseg = max(nperseg, n_perseg)
+                    nperseg = min(nperseg, len(raw))
+                    noverlap = int(nperseg * Overlap)
+                    Freq_range = (.5, 80.0)
+                    nfft = 1
+                    while nfft < nperseg:
+                        nfft *= 2
+                    nfft = max(nfft, nfft_min)
+
+                    NumOfColumns = 9
+                    NumberOfChannels = len(raw.ch_names)
+                    n_figs = int(np.ceil(NumberOfChannels / NumOfColumns))
+                    TFR_Filename_ALL = [
+                        f"{save_full_path}{version_type}_{tfr_method}_All_Batch{b+1}.png" for b in range(n_figs)]
+                    utils.DJ_Print(
+                        f"Plotting spectrogram for all channels: {subject_id}")
+                    for fig_idx in range(n_figs):
+                        batch_start = fig_idx * NumOfColumns
+                        batch_end = min(batch_start + NumOfColumns,
+                                        NumberOfChannels)
+                        batch_size = batch_end - batch_start
+
+                        fig, axes = plt.subplots(batch_size, 1, figsize=(
+                            20, 10), sharex=True)
+                        if batch_size == 1:
+                            axes = [axes]
+                        fig.subplots_adjust(left=0.02, right=0.98,
+                                            top=0.93, bottom=0.05, hspace=0.35)
+
+                        fig.suptitle(
+                            f"EEG Channels - SubjectID : {subject_id}")
+
+                        # Plotting each segment in this batch
+                        for local_idx, seg_idx in enumerate(range(batch_start, batch_end)):
+                            frequencies, times_sec, Power = spectrogram(x=raw.get_data(
+                            )[local_idx+batch_start, :], nperseg=nperseg, noverlap=noverlap, nfft=nfft, fs=raw.info['sfreq'])
+                            bpm_all = frequencies
+                            Power_decible = 10 * np.log10(Power + 1e-12)
+
+                            band = (bpm_all >= Freq_range[0]) & (
+                                bpm_all <= Freq_range[1])
+                            bpm_band = bpm_all[band]
+                            Power_band = Power_decible[band, :]
+
+                            extent = [raw.times[0], raw.times[-1],
+                                      bpm_band[0], bpm_band[-1]]
+                            ax = axes[local_idx]
+                            im = ax.imshow(
+                                Power_band,
+                                origin="lower",
+                                extent=extent,
+                                aspect="auto",
+                                interpolation="bilinear",
+                                vmin=np.percentile(Power_band, 5),
+                                vmax=np.percentile(Power_band, 95),
+                                cmap="jet",
+                            )
+                            ax.set_title(raw.ch_names[local_idx+batch_start])
+                            fig.colorbar(im, ax=ax,
+                                         label="Power (dB)", pad=0.01, fraction=0.05)
+                        plt.savefig(
+                            TFR_Filename_ALL[fig_idx], format='png', dpi=300)
+            elif version_type == 'MNE_Python':
                 # Create a fake event spanning the entire raw
                 event_id = 1
                 events = np.array([[0, 0, event_id]])
@@ -210,30 +277,28 @@ def Spectrogram(raw, subject_id, channel_names, fmin, fmax, tmin, tmax, fs, nper
                     if os.path.isfile(tfr.Filename):
                         DataTFR = tfr.Load()
                     else:
-                        # DataTFR = mne.time_frequency.tfr_morlet(Data_Epoched, freqs=frequencies, n_cycles=n_cycles,
-                        #                                         use_fft=True, return_itc=False, decim=5, n_jobs=1)
-                        DataTFR = Data_Epoched.compute_tfr(method="morlet", freqs=frequencies, n_cycles=n_cycles,
+                        DataTFR = Data_Epoched.compute_tfr(method=tfr_method.lower(), freqs=frequencies, n_cycles=n_cycles,
                                                            use_fft=True, return_itc=False, decim=5, n_jobs=1)
                         tfr.Save(DataTFR)
                 elif tfr_method == 'MultiTaper':
                     if os.path.isfile(f"{tfr.Filename}-tfr.h5"):
                         DataTFR = tfr.Load()
                     else:
-                        DataTFR = mne.time_frequency.tfr_multitaper(Data_Epoched, freqs=frequencies, time_bandwidth=4, n_cycles=n_cycles,
-                                                                    return_itc=False, decim=5, n_jobs=1)
+                        DataTFR = Data_Epoched.compute_tfr(method=tfr_method.lower(), freqs=frequencies, time_bandwidth=4, n_cycles=n_cycles,
+                                                           return_itc=False, decim=5, n_jobs=1)
                         tfr.Save(DataTFR)
                 else:
                     utils.DJ_Print(
-                        "Requested TFR method is not implemented", "warning")
+                        f"Requested TFR method : {tfr_method} is not implemented", "warning")
 
                 vmin, vmax,  Yscale, cb, CMAP = (
-                    DataTFR.data.min()*.5, DataTFR.data.max()*.2,  'linear', False, plt.cm.jet)
+                    DataTFR.data.min()*.9, DataTFR.data.max()*.05,  'linear', False, plt.cm.jet)
                 plt.close('all')
                 plt.figure(figsize=(10, 8))
                 Ax = plt.axes()
                 DataTFR.plot(picks=ch, colorbar=cb, yscale=Yscale,
-                             cmap=CMAP, axes=Ax, show=False)
+                             cmap=CMAP, axes=Ax, show=False, vlim=(vmin, vmax))
                 if save:
-                    plt.savefig(TFR_Filename, format='png')
+                    plt.savefig(TFR_Filename, format='png', dpi=300)
                 if show:
                     plt.show(block=False)

@@ -278,7 +278,7 @@ class TFR_MNE():
 
     def Load(self):
         loadedTFR = mne.time_frequency.read_tfrs(
-            fname=self.Filename + '-tfr.h5')[0]
+            fname=self.Filename + '-tfr.h5')
         return loadedTFR
 
 

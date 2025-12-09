@@ -202,7 +202,7 @@ def Spectrogram(raw, subject_id, channel_names, fmin, fmax, tmin, tmax, fs, nper
                     nperseg = max(nperseg, n_perseg)
                     nperseg = min(nperseg, len(raw))
                     noverlap = int(nperseg * Overlap)
-                    Freq_range = (.5, 80.0)
+                    Freq_range = (fmin, fmax)
                     nfft = 1
                     while nfft < nperseg:
                         nfft *= 2

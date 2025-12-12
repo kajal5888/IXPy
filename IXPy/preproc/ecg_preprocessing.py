@@ -25,7 +25,7 @@ def rmssd(HBPM):
     return rmssd
 
 
-def RRIndex2MilliSec(R_peaks_index, sampling_freq=256, min_rr=250, max_rr=2000, interp=True):
+def RRIndex2MilliSec(R_peaks_index, estimator='median', sampling_freq=256, min_rr=250, max_rr=2000, interp=True):
     """
     Convert R-peak indices or timestamps to RR intervals in milliseconds.
 
@@ -49,7 +49,10 @@ def RRIndex2MilliSec(R_peaks_index, sampling_freq=256, min_rr=250, max_rr=2000, 
         return np.empty(0, dtype=float)
 
     diff_r = np.diff(r)
-    med_diff = np.median(np.abs(diff_r))
+    if estimator == 'median':
+        med_diff = np.median(np.abs(diff_r))
+    elif estimator == 'mean':
+        med_diff = np.mean(np.abs(diff_r))
 
     # Heuristic auto-detect input unit based on typical spacing
     # - median diff >> 1000 -> values are ms timestamps

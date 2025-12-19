@@ -23,7 +23,7 @@ class Read_EmbracePlus:
         """
         start_time_ns = start_time * 1000
         start_timestamp = pd.to_datetime(start_time_ns, unit='ns')
-
+        start_timestamp = start_timestamp.tz_localize('Europe/Berlin')
         # Calculate end_timestamp based on the length of the list and sampling frequency
         end_timestamp = start_timestamp + \
             pd.to_timedelta(len_list / sampling_freq, unit='s')

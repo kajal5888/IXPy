@@ -180,9 +180,10 @@ def Preprocessing_MaxHealthBand(df, ppg_columns):
 class ReadCSV:
     from pathlib import Path
 
-    def __init__(self, filename, device, encoding='utf-8', pandas_kwargs=None):
+    def __init__(self, filename, device, Sep=',', encoding='utf-8', pandas_kwargs=None):
         self.filename = Path(filename)
         self.device = device.lower()
+        self.sep = Sep
         self.encoding = encoding
         self.pandas_kwargs = pandas_kwargs or {}
 
@@ -200,7 +201,7 @@ class ReadCSV:
         try:
             if self.device == 'shimmer':
                 header_idx = 0
-                dF = pd.read_csv(self.filename, sep=',',
+                dF = pd.read_csv(self.filename, sep=self.sep,
                                  low_memory=False, encoding=self.encoding, **self.pandas_kwargs)
                 dF = dF.reset_index()
                 dF.columns = dF.iloc[header_idx]
